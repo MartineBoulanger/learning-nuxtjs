@@ -1,0 +1,131 @@
+<template>
+  <v-container>
+    <v-layout justify-center align-center>
+      <v-flex xs8>
+        <v-card class="mt-4">
+          <v-card-title class="d-flex justify-space-between">
+            <h1 class="headline">Edit Question</h1>
+            <n-link to="/admin/questions" class="text-decoration-none">
+              <v-btn small color="grey darken-1" dark>Back</v-btn>
+            </n-link>
+          </v-card-title>
+          <v-card-text class="mt-4">
+            <v-form @submit.prevent="update">
+              <v-text-field
+                v-model="quiz.question"
+                label="Question"
+                hint="Make it good, but not easy."
+                outlined
+              ></v-text-field>
+              <v-text-field
+                v-model="quiz.options.one"
+                label="Option 1"
+                hint="A possible correct answer to the question."
+                outlined
+              ></v-text-field>
+              <v-text-field
+                v-model="quiz.options.two"
+                label="Option 2"
+                hint="A possible correct answer to the question."
+                outlined
+              ></v-text-field>
+              <v-text-field
+                v-model="quiz.options.three"
+                label="Option 3"
+                hint="A possible correct answer to the question."
+                outlined
+              ></v-text-field>
+              <v-text-field
+                v-model="quiz.options.four"
+                label="Option 4"
+                hint="A possible correct answer to the question."
+                outlined
+              ></v-text-field>
+              <v-card-title>
+                <h1 class="headline">Choose the correct answer</h1>
+              </v-card-title>
+              <v-radio-group v-model="correct" :mandatory="false" row>
+                <v-radio
+                  v-for="option in quiz.options"
+                  :key="`edit-${option}`"
+                  :label="option"
+                  :value="option"
+                  class="ml-4"
+                ></v-radio>
+              </v-radio-group>
+              <v-btn class="grey lighten-1" small type="submit" block
+                >Update</v-btn
+              >
+            </v-form>
+          </v-card-text>
+        </v-card>
+      </v-flex>
+    </v-layout>
+  </v-container>
+</template>
+
+<script>
+import consola from 'consola'
+
+export default {
+  name: 'EditQuestionsPage',
+  layout: 'defaultLayout',
+  middleware: 'auth',
+  data() {
+    return {
+      quiz: {
+        question: '',
+        options: {
+          one: '',
+          two: '',
+          three: '',
+          four: '',
+        },
+      },
+      correct: '',
+      answer_id: '',
+    }
+  },
+  created() {
+    this.get()
+    this.getAnswer()
+  },
+  methods: {
+    get() {
+      this.$axios
+        .get(`/questions.json`, { params: this.$route.params.edit })
+        .then((res) => {
+          consola.log({ message: res.data, badge: true })
+          this.quiz = res.data[this.$route.params.edit]
+        })
+        .catch((err) => consola.error({ message: err.message, badge: true }))
+    },
+    update() {
+      this.$axios
+        .patch(`/questions/${this.$route.params.edit}.json`, this.quiz)
+        .then(() => this.updateAnswer())
+        .catch((err) => consola.error({ message: err.message, badge: true }))
+    },
+    getAnswer() {
+      this.$axios
+        .get(
+          `/answers.json?orderBy="question_id"&equalTo="${this.$route.params.edit}"`
+        )
+        .then((res) => {
+          this.correct = Object.values(res.data)[0].answer
+          this.answer_id = Object.keys(res.data)[0]
+        })
+        .catch((err) => consola.error({ message: err.message, badge: true }))
+    },
+    updateAnswer() {
+      this.$axios
+        .patch(`/answers/${this.answer_id}.json`, {
+          question_id: this.$route.params.edit,
+          answer: this.correct,
+        })
+        .then((res) => this.$router.push('/admin/questions'))
+        .catch((err) => consola.error({ message: err.message, badge: true }))
+    },
+  },
+}
+</script>
