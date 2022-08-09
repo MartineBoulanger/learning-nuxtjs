@@ -30,3 +30,8 @@ This is because it won't install expres by default and you can't choose it eithe
 yarn add express
 ```
 
+And install nodemon if you're making the server file:
+
+```
+yarn add nodemon
+```
