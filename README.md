@@ -1,4 +1,4 @@
-# learning-nuxtjs
+# Master Nuxt.js
 Code from the course Master Nuxt.js on Udemy
 
 ## It's free!! Grab it while you can!
